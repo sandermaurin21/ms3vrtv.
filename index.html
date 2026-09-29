@@ -2,664 +2,950 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MS3 - Más allá de lo que ves</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FontLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/geometries/TextGeometry.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MS3 - La Nueva Televisión Inmersiva</title>
+    <!-- Librería Pannellum para reproducción esférica 360° nativa propia -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
-        body { font-family: 'Outfit', sans-serif; background-color: #030307; color: #ffffff; overflow-x: hidden; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #05050c; }
-        ::-webkit-scrollbar-thumb { background: #db2777; border-radius: 3px; }
-        .glow-pink { text-shadow: 0 0 30px rgba(236, 72, 153, 0.9), 0 0 60px rgba(168, 85, 247, 0.7); }
-        .glow-box { box-shadow: 0 0 40px rgba(219, 39, 119, 0.6), 0 0 20px rgba(168, 85, 247, 0.5); }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        #space-bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #000000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* Pantalla de Bienvenida - Fondo Neón con Pantallas 3D Flotantes */
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000000;
+            perspective: 1400px;
+            overflow: hidden;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s cubic-bezier(0.4, 0, 0.2, 1), filter 1.2s ease;
+        }
+
+        .welcome-screen.fade-out-elegant {
+            opacity: 0;
+            transform: scale(1.15);
+            filter: blur(10px);
+            pointer-events: none;
+        }
+
+        .welcome-logo-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -54%);
+            text-align: center;
+            width: 550px;
+            max-width: 90vw;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .welcome-logo-video {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            border: none !important;
+            outline: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+
+        .geometric-bg-3d {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+            transform-style: preserve-3d;
+        }
+
+        .tv-screen-3d {
+            position: absolute;
+            background: rgba(10, 5, 20, 0.45);
+            border: 2px solid rgba(0, 243, 255, 0.4);
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.25), inset 0 0 15px rgba(255, 42, 109, 0.2);
+            backdrop-filter: blur(2px);
+            border-radius: 8px;
+            animation: floatScreens 16s infinite linear;
+        }
+
+        .tv-screen-3d::after {
+            content: '';
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            width: 30%;
+            height: 3px;
+            background: rgba(255, 42, 109, 0.6);
+            border-radius: 2px;
+            box-shadow: 0 0 8px rgba(255, 42, 109, 0.8);
+        }
+
+        .screen-1 { width: 140px; height: 90px; top: 15%; left: 8%; animation-duration: 18s; }
+        .screen-2 { width: 160px; height: 100px; top: 62%; left: 10%; animation-duration: 22s; animation-direction: reverse; }
+        .screen-3 { width: 130px; height: 85px; top: 18%; right: 10%; animation-duration: 15s; }
+        .screen-4 { width: 170px; height: 110px; bottom: 12%; right: 12%; animation-duration: 24s; }
+        .screen-5 { width: 120px; height: 75px; top: 42%; left: 3%; animation-duration: 20s; }
+        .screen-6 { width: 150px; height: 95px; top: 32%; right: 5%; animation-duration: 19s; animation-direction: reverse; }
+
+        @keyframes floatScreens {
+            0% {
+                transform: translateZ(-300px) rotateX(0deg) rotateY(0deg) translateY(0px);
+                opacity: 0.25;
+            }
+            50% {
+                transform: translateZ(280px) rotateX(180deg) rotateY(180deg) translateY(-35px);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateZ(-300px) rotateX(360deg) rotateY(360deg) translateY(0px);
+                opacity: 0.25;
+            }
+        }
+
+        .neon-enter-btn {
+            position: absolute;
+            bottom: 12vh;
+            z-index: 10;
+            background: transparent;
+            color: #00f3ff;
+            border: 2px solid #00f3ff;
+            padding: 16px 40px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            cursor: pointer;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.7);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.4), inset 0 0 15px rgba(0, 243, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .neon-enter-btn:hover {
+            background: #00f3ff;
+            color: #000000;
+            box-shadow: 0 0 35px #00f3ff, 0 0 70px rgba(255, 42, 109, 0.6);
+            transform: scale(1.08);
+            text-shadow: none;
+        }
+
+        /* Contenedor Principal */
+        .app-container {
+            display: none;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .app-container.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Barra Superior */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            background: linear-gradient(180deg, rgba(11,6,20,0.95) 0%, rgba(11,6,20,0) 100%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #fff, #b19fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+        }
+
+        .top-icons {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            color: #b19fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .profile-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #a855f7, #6366f1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        /* Menú de Pestañas Superior */
+        .sub-nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 20px;
+            margin-top: 70px;
+            background-color: #0b0614;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #8a859b;
+            cursor: pointer;
+            text-decoration: none;
+            gap: 4px;
+            white-space: nowrap;
+            padding: 0 10px;
+            background: none;
+            border: none;
+            font-size: 0.9rem;
+            position: relative;
+        }
+
+        .nav-item.active {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            width: 20px;
+            height: 3px;
+            background-color: #ff2a6d;
+            border-radius: 2px;
+        }
+
+        /* Vistas de Contenido Dinámicas */
+        .content-section {
+            display: none;
+            padding: 20px;
+            padding-bottom: 50px;
+            background-color: #0b0614;
+            min-height: calc(100vh - 130px);
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            letter-spacing: 1.5px;
+            color: #8a859b;
+            margin-bottom: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* Banner Destacado */
+       .hero-banner {
+            position: relative;
+            width: 100%;
+            height: 430px;
+            border-radius: 16px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(43, 17, 85, 0.5), rgba(117, 89, 125, 0.5)), url('sanderdocumentalnuevo.jpeg');
+            background-size: cover;
+            background-position: center;
+            border: 1px solid rgba(255, 42, 109, 0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 25px;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(0,0,0,0.1) 30%, rgba(11,6,20,0.95) 100%);
+            z-index: 1;
+        }
+
+        .hero-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(120, 50, 255, 0.6);
+            backdrop-filter: blur(5px);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            z-index: 2;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .hero-details {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-details h2 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            line-height: 1.2;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 22px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover { opacity: 0.85; }
+        .btn-primary { background-color: #fff; color: #000; }
+        .btn-secondary {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .btn-danger {
+            background-color: rgba(255, 42, 109, 0.2);
+            color: #ff2a6d;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 42, 109, 0.4);
+        }
+
+        /* Carruseles y Cuadrículas */
+        .row-section {
+            margin-top: 30px;
+        }
+
+        .row-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .cards-slider {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            scrollbar-width: none;
+        }
+
+        .cards-slider::-webkit-scrollbar { display: none; }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .card {
+            flex: 0 0 180px;
+            height: 110px;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            background-color: #1a1528;
+            border: 1px solid rgba(255,255,255,0.08);
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .cards-grid .card {
+            width: 100%;
+            height: 120px;
+        }
+
+        .card:hover {
+            transform: scale(1.03);
+            border-color: rgba(255, 42, 109, 0.5);
+        }
+
+        .card-bg {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #151025, #3c2a6d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .card-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(0,0,0,0.85) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 8px;
+        }
+
+        .card-title {
+            font-size: 0.8rem;
+            font-weight: bold;
+            line-height: 1.1;
+        }
+
+        .card-tag {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            font-size: 0.6rem;
+            background: rgba(11, 6, 20, 0.7);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #d8b4fe;
+        }
+
+        .card-remove-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #ff2a6d;
+            border: 1px solid rgba(255, 42, 109, 0.4);
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .card-remove-btn:hover {
+            background: #ff2a6d;
+            color: #fff;
+            transform: scale(1.1);
+        }
+
+        /* MODAL DE PREVISIÓN */
+        .preview-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .preview-modal.active {
+            display: flex;
+        }
+
+        .preview-content {
+            background: #151022;
+            width: 100%;
+            max-width: 550px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+            position: relative;
+            animation: modalPop 0.3s ease;
+        }
+
+        @keyframes modalPop {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .preview-header-img {
+            width: 100%;
+            height: 240px;
+            background: linear-gradient(135deg, #2b1055, #a855f7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .preview-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-body {
+            padding: 20px;
+        }
+
+        .preview-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .preview-desc {
+            font-size: 0.9rem;
+            color: #b8b2cb;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        .preview-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .preview-actions .btn {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            justify-content: center;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Reproductor Propio 360° VR nativo sin marcas de YouTube */
+        .player-fullscreen-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            z-index: 99999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .player-fullscreen-container.active { display: flex; }
+        
+        #panorama {
+            width: 100%;
+            height: 100%;
+        }
+
+        .player-controls {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 100000; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .player-controls.hidden { opacity: 0; pointer-events: none; }
+        .control-top { position: absolute; top: 20px; right: 20px; pointer-events: auto; }
+        .close-btn {
+            background: rgba(0, 0, 0, 0.6); color: white; border: 2px solid white;
+            font-size: 1.2rem; width: 40px; height: 40px; border-radius: 50%;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .control-bottom {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 10px; pointer-events: auto; background: rgba(0, 0, 0, 0.6);
+            padding: 8px 16px; border-radius: 20px; backdrop-filter: blur(5px);
+        }
+        .control-btn { background: transparent; color: white; border: none; cursor: pointer; font-size: 0.85rem; font-weight: bold; }
     </style>
 </head>
-<body class="bg-[#030307] text-white selection:bg-pink-600 selection:text-white">
+<body>
 
-    <canvas id="space-bg"></canvas>
-
-    <!-- PANTALLA DE INICIO / INTRO -->
-    <div id="intro-screen" class="fixed inset-0 z-50 bg-[#030307] flex flex-col items-center justify-between py-6 px-4 transition-all duration-1000">
-        <div class="text-center pt-2">
-            <span class="text-[10px] sm:text-xs text-pink-400 tracking-[0.4em] uppercase font-bold glow-pink">EXPERIENCIA INMERSIVA</span>
-        </div>
-        
-        <div class="w-full max-w-2xl h-[48vh] sm:h-[58vh] flex items-center justify-center relative my-auto overflow-hidden rounded-3xl">
-            <video autoplay loop muted playsinline class="w-full h-full object-contain filter drop-shadow-[0_0_35px_rgba(217,70,239,0.8)]">
-                <source src="./ms3media/ms3logo.mp4.mp4" type="video/mp4">
+    <!-- Pantalla de Bienvenida -->
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-logo-container">
+            <video class="welcome-logo-video" autoplay muted loop playsinline>
+                <source src="ms3media/ms3logo.mp4.mp4" type="video/mp4">
+                Tu navegador no soporta videos.
             </video>
         </div>
+
+        <div class="geometric-bg-3d">
+            <div class="tv-screen-3d screen-1"></div>
+            <div class="tv-screen-3d screen-2"></div>
+            <div class="tv-screen-3d screen-3"></div>
+            <div class="tv-screen-3d screen-4"></div>
+            <div class="tv-screen-3d screen-5"></div>
+            <div class="tv-screen-3d screen-6"></div>
+        </div>
+
+        <button class="neon-enter-btn" id="enterBtn">INGRESAR</button>
+    </div>
+
+    <!-- Contenedor Principal (App) -->
+    <div class="app-container" id="appContainer">
         
-        <div class="w-full max-w-sm flex flex-col items-center pb-2">
-            <p class="text-pink-300 text-[11px] sm:text-xs tracking-[0.3em] uppercase mb-4 font-extrabold glow-pink text-center">MÁS ALLÁ DE LO QUE VES</p>
-            <div class="flex flex-col sm:flex-row gap-3 w-full">
-                <button onclick="enterApp()" class="w-full py-3.5 sm:py-4 bg-gradient-to-r from-pink-600 via-purple-600 to-sky-400 rounded-2xl font-extrabold text-xs sm:text-sm tracking-wider hover:opacity-90 transition transform hover:scale-105 glow-box cursor-pointer">
-                    INGRESAR AL MUNDO MS3
-                </button>
-                <button onclick="openAuthModal()" class="w-full py-3.5 sm:py-4 bg-white/10 hover:bg-white/20 border border-pink-500/40 rounded-2xl font-bold text-xs sm:text-sm tracking-wider transition backdrop-blur cursor-pointer text-pink-300 text-center">
-                    <i class="fa-solid fa-user-lock mr-2"></i> INICIAR SESIÓN / REGISTRO
-                </button>
+        <!-- Barra Superior -->
+        <div class="top-nav">
+            <div class="logo" id="logoHomeBtn">MS3</div>
+            <div class="top-icons">
+                <div class="profile-icon" id="profileBtn" title="Mi Cuenta">GV</div>
+                <div id="settingsBtn" title="Ajustes">⚙️</div>
+            </div>
+        </div>
+
+        <!-- Pestañas de Navegación -->
+        <div class="sub-nav">
+            <button class="nav-item active" data-target="tabInicio">Inicio</button>
+            <button class="nav-item" data-target="tabProgramas">Programas VR</button>
+            <button class="nav-item" data-target="tabDirectos">Directos</button>
+            <button class="nav-item" data-target="tabMiLista">Mi Lista</button>
+            <button class="nav-item" data-target="tabBusqueda">Búsqueda</button>
+        </div>
+
+        <!-- VISTA 1: INICIO -->
+        <div class="content-section active" id="tabInicio">
+            <div class="section-title">Destacado</div>
+            <div class="hero-banner" style="background-image: url(ms3media/sanderdocumentalnuevo.jpeg); background-size: cover; background-position: center;">
+                <div class="hero-overlay"></div>
+                <div class="hero-badge">MS3 EXCLUSIVO</div>
+                <div class="hero-details">
+                    <h2>SANDER MAURIN : creador y director de MS3</h2>
+                    <div class="hero-buttons">
+                        <button class="btn btn-primary" onclick="openPlayer('https://youtu.be/cQeUF8H2PR0?si=T-jnZonZnGdbJ9bs')">▶ REPRODUCIR</button>
+                        <button class="btn btn-secondary" onclick="openPreview('Sander maurin creador y director de ms3', '<img src=&quot;ms3media/sanderdocumentalnuevo.jpeg&quot; style=&quot;width:100%; height:100%; object-fit:cover;&quot;>', 'Disfruta de este contenido exclusivo inmersivo dirigido por Sander Maurin...', 'https://youtu.be/cQeUF8H2PR0?si=T-jnZonZnGdbJ9bs')">INFO</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carrusel 1: Tendencias Ahora -->
+            <div class="row-section">
+                <div class="row-header"><div class="section-title" style="margin-bottom:0;">Tendencias Ahora</div></div>
+                <div class="cards-slider">
+                    <!-- Tarjeta "Buscando a la futura vedette" -->
+                    <div class="card" onclick="openPreview('Buscando a la futura vedette', '<img src=&quot;ms3media/vedettehorizontal.png&quot; style=&quot;width:100%; height:100%; object-fit:cover;&quot;>', 'Experiencia 360° propia grabada con Gear 360. Arrastra con el mouse o mueve tu celular con total libertad de movimiento.', 'https://www.youtube.com/embed/RCT0Kw5cqXQ?autoplay=1')">
+                        <div class="card-bg" style="background-image: url('ms3media/vedettehorizontal.png');"></div>
+                        <span class="card-tag">360° Pro</span>
+                        <div class="card-overlay"><div class="card-title">Buscando a la futura vedette</div></div>
+                    </div>
+                    <!-- Tarjeta "MEDICINA VR" actualizada con medicinahorizontal.png -->
+                    <div class="card" onclick="openPreview('MEDICINA VR', '<img src=&quot;ms3media/medicinahorizontal.png&quot; style=&quot;width:100%; height:100%; object-fit:cover;&quot;>', 'Explora los avances y contenidos médicos inmersivos capturados en resolución total de 360 grados.', 'https://youtu.be/cQeUF8H2PR0?si=T-jnZonZnGdbJ9bs', 'ms3media/medicinahorizontal.png')">
+                        <div class="card-bg" style="background-image: url('ms3media/medicinahorizontal.png');"></div>
+                        <span class="card-tag">360°</span>
+                        <div class="card-overlay"><div class="card-title">MEDICINA VR</div></div>
+                    </div>
+                    <div class="card" onclick="openPreview('El Estudio Central', '🎬', 'Detrás de escena de las producciones más ambiciosas de la cadena MS3.', 'https://youtu.be/cQeUF8H2PR0?si=T-jnZonZnGdbJ9bs')"><div class="card-bg">🎬</div><span class="card-tag">360°</span><div class="card-overlay"><div class="card-title">El Estudio Central</div></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISTA 2: PROGRAMAS VR -->
+        <div class="content-section" id="tabProgramas">
+            <div class="section-title">Catálogo Completo de Programas VR</div>
+            <div class="cards-grid">
+                <div class="card" onclick="openPreview('Buscando a la futura vedette', '<img src=&quot;ms3media/vedettehorizontal.png&quot; style=&quot;width:100%; height:100%; object-fit:cover;&quot;>', 'Experiencia 360° propia grabada con Gear 360. Arrastra con el mouse o mueve tu celular con total libertad de movimiento.', 'https://www.youtube.com/embed/RCT0Kw5cqXQ?autoplay=1')">
+                    <div class="card-bg" style="background-image: url('ms3media/vedettehorizontal.png');"></div>
+                    <span class="card-tag">360° Pro</span>
+                    <div class="card-overlay"><div class="card-title">Buscando a la futura vedette</div></div>
+                </div>
+                <div class="card" onclick="openPreview('MEDICINA VR', '<img src=&quot;ms3media/medicinahorizontal.png&quot; style=&quot;width:100%; height:100%; object-fit:cover;&quot;>', 'Explora los avances y contenidos médicos inmersivos capturados en resolución total de 360 grados.', 'https://youtu.be/cQeUF8H2PR0?si=T-jnZonZnGdbJ9bs', 'ms3media/medicinahorizontal.png')">
+                    <div class="card-bg" style="background-image: url('ms3media/medicinahorizontal.png');"></div>
+                    <span class="card-tag">360°</span>
+                    <div class="card-overlay"><div class="card-title">MEDICINA VR</div></div>
+                </div>
+                <div class="card" onclick="openPreview('Océanos Profundos 360', '🌊', 'Sumérgete junto a la fauna marina en las profundidades del océano.', 'https://youtu.be/cQeUF8H2PR0?si=T-jnZonZnGdbJ9bs')"><div class="card-bg">🌊</div><span class="card-tag">Naturaleza</span><div class="card-overlay"><div class="card-title">Océanos Profundos 360</div></div></div>
+            </div>
+        </div>
+
+        <!-- VISTA 3: DIRECTOS -->
+        <div class="content-section" id="tabDirectos">
+            <div class="section-title">Transmisiones en Vivo 360°</div>
+            <div class="cards-grid">
+                <div class="card" onclick="openPreview('Estudio Principal Live', '🔴', 'Transmisión en directo desde el set principal con interacción en tiempo real.', 'https://youtu.be/cQeUF8H2PR0?si=T-jnZonZnGdbJ9bs')"><div class="card-bg">🔴</div><span class="card-tag">EN VIVO</span><div class="card-overlay"><div class="card-title">Estudio Principal Live</div></div></div>
+            </div>
+        </div>
+
+        <!-- VISTA 4: MI LISTA -->
+        <div class="content-section" id="tabMiLista">
+            <div class="section-title">Tus Videos Guardados en el Perfil</div>
+            <div class="cards-grid" id="gridMyList"></div>
+        </div>
+
+        <!-- VISTA 5: BÚSQUEDA -->
+        <div class="content-section" id="tabBusqueda">
+            <div class="section-title">Resultados Populares</div>
+            <div class="cards-grid">
+                <div class="card" onclick="openPreview('Global 360 News', '🌍', 'Noticias internacionales cubiertas en formato inmersivo de 360 grados.', 'https://youtu.be/cQeUF8H2PR0?si=T-jnZonZnGdbJ9bs')">
+                    <div class="card-bg">🌍</div><span class="card-tag">360°</span><div class="card-overlay"><div class="card-title">Global 360 News</div></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL DE PREVISUALIZACIÓN -->
+    <div class="preview-modal" id="previewModal">
+        <div class="preview-content">
+            <div class="preview-header-img" id="modalImg">
+                🚀
+                <button class="preview-close" id="closeModalBtn" onclick="closePreview()">✕</button>
+            </div>
+            <div class="preview-body">
+                <div class="preview-title" id="modalTitle">Título del Programa</div>
+                <div class="preview-desc" id="modalDesc">Descripción detallada del contenido audiovisual inmersivo...</div>
+                <div class="preview-actions">
+                    <button class="btn btn-primary" id="modalPlayBtn">▶ Reproducir</button>
+                    <button class="btn btn-secondary" id="modalAddListBtn">+ Agregar a mi lista</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL DE AUTENTICACIÓN -->
-    <div id="auth-modal" class="fixed inset-0 z-[60] bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="bg-[#070714] border border-pink-500/30 rounded-3xl p-6 sm:p-8 max-w-md w-full relative shadow-2xl glow-box">
-            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
-            <div id="auth-form-container">
-                <h3 class="text-2xl font-black mb-2 bg-gradient-to-r from-pink-400 via-purple-400 to-sky-300 bg-clip-text text-transparent">Cuenta MS3</h3>
-                <p class="text-xs text-gray-400 mb-6">Inicia sesión con tu correo o regístrate para mantener tu cuenta abierta.</p>
-                <form onsubmit="handleUserLoginOrRegister(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-[10px] uppercase font-bold text-gray-400 mb-1">Correo Electrónico</label>
-                        <input type="email" id="user-email-input" required class="w-full bg-[#030307] border border-pink-500/30 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-pink-500" placeholder="tu@correo.com">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] uppercase font-bold text-gray-400 mb-1">Contraseña</label>
-                        <input type="password" id="user-pass-input" required class="w-full bg-[#030307] border border-pink-500/30 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-pink-500" placeholder="••••••••">
-                    </div>
-                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-pink-600 via-purple-600 to-sky-400 hover:opacity-90 font-extrabold text-xs rounded-xl transition cursor-pointer shadow-lg shadow-pink-600/30">
-                        ACCEDER / REGISTRARSE
-                    </button>
-                </form>
+    <!-- Visor Esférico Propio 360° (Nativo sin interfaz de YouTube) -->
+    <div class="player-fullscreen-container" id="playerContainer">
+        <div id="panorama"></div>
+        <div class="player-controls" id="playerControls">
+            <div class="control-top">
+                <button class="close-btn" id="closePlayerBtn">✕</button>
             </div>
-            <div id="auth-session-container" class="hidden text-center py-4">
-                <div id="session-avatar" class="w-16 h-16 bg-gradient-to-tr from-pink-500 via-purple-600 to-sky-400 rounded-full flex items-center justify-center font-black text-2xl mx-auto mb-4 shadow-lg shadow-pink-500/40">U</div>
-                <h3 class="text-xl font-bold mb-1" id="session-email-display">usuario@correo.com</h3>
-                <p class="text-xs text-pink-400 mb-6 font-semibold">Sesión Activa • Plan MS3</p>
-                <button onclick="handleLogout()" class="w-full py-3 bg-red-600/20 hover:bg-red-600/30 border border-red-500/40 text-red-300 font-extrabold text-xs rounded-xl transition cursor-pointer">
-                    CERRAR SESIÓN
-                </button>
+            <div class="control-bottom">
+                <button class="control-btn" id="gyroBtn">Activar Giroscopio</button>
             </div>
         </div>
     </div>
-
-    <!-- APLICACIÓN PRINCIPAL -->
-    <div id="main-app" class="opacity-0 transition-opacity duration-1000 flex min-h-screen">
-        
-        <aside class="hidden md:flex flex-col w-64 bg-[#05050c]/95 backdrop-blur-xl border-r border-pink-500/15 p-6 sticky top-0 h-screen">
-            <div class="flex items-center space-x-2 mb-10">
-                <span class="text-2xl font-black tracking-wider bg-gradient-to-r from-pink-500 via-purple-400 to-sky-300 bg-clip-text text-transparent glow-pink">MS3</span>
-            </div>
-            <div class="text-[10px] text-pink-400/70 font-semibold tracking-widest mb-4">MÁS ALLÁ DE LO QUE VES</div>
-            
-            <nav class="space-y-2 flex-1">
-                <button onclick="switchTab('inicio', this)" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl bg-pink-600/20 text-pink-300 border border-pink-500/30 font-medium transition cursor-pointer"><i class="fa-solid fa-house"></i><span>Inicio</span></button>
-                <button onclick="switchTab('explorar', this)" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition cursor-pointer"><i class="fa-solid fa-compass"></i><span>Explorar</span></button>
-                <button onclick="switchTab('tendencias', this)" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition cursor-pointer"><i class="fa-solid fa-fire"></i><span>Tendencias & Reels</span></button>
-                <button onclick="switchTab('en2d', this)" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition cursor-pointer"><i class="fa-solid fa-desktop"></i><span>En 2D</span></button>
-                <button onclick="switchTab('envr', this)" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition cursor-pointer"><i class="fa-solid fa-vr-cardboard"></i><span>En Realidad Virtual</span></button>
-                <button onclick="switchTab('peliculas', this)" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition cursor-pointer"><i class="fa-solid fa-film"></i><span>Películas</span></button>
-                <button onclick="switchTab('series', this)" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition cursor-pointer"><i class="fa-solid fa-tv"></i><span>Series</span></button>
-                <button onclick="switchTab('milista', this)" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition cursor-pointer"><i class="fa-solid fa-list"></i><span>Mi lista</span></button>
-            </nav>
-
-            <div class="p-4 bg-gradient-to-br from-pink-950/40 via-purple-950/40 to-indigo-950/40 border border-pink-500/20 rounded-2xl text-center shadow-lg shadow-pink-950/30">
-                <p class="text-xs font-bold text-pink-300 mb-1">PULSERA NFC DE REGALO</p>
-                <p class="text-[10px] text-gray-400 mb-3">Suscripción mensual accesible</p>
-                <button onclick="switchTab('suscripcion', null)" class="w-full py-2 bg-gradient-to-r from-pink-600 via-purple-600 to-sky-400 hover:opacity-90 text-xs font-bold rounded-xl transition shadow-md shadow-pink-600/30 cursor-pointer">SUBSCRIBITE AHORA</button>
-            </div>
-        </aside>
-
-        <main class="flex-1 pb-24 md:pb-10">
-            <header class="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-pink-500/15 bg-[#030307]/85 backdrop-blur-md sticky top-0 z-30">
-                <div class="flex items-center bg-[#070714] border border-pink-500/25 rounded-full px-4 py-2 w-44 sm:w-64 md:w-96 shadow-inner">
-                    <i class="fa-solid fa-magnifying-glass text-pink-400 mr-2 text-sm"></i>
-                    <input type="text" id="search-input" placeholder="Buscar programas..." onkeyup="handleSearch(event)" class="bg-transparent border-none outline-none text-xs w-full text-white placeholder-gray-500">
-                </div>
-                <div class="flex items-center space-x-3">
-                    <button onclick="openVRExperience('MS3 Hub Inmersivo')" class="hidden sm:flex items-center space-x-2 px-3.5 py-1.5 bg-pink-600/20 border border-pink-500/40 rounded-full text-xs font-semibold text-pink-300 hover:bg-pink-600/30 transition cursor-pointer shadow-md shadow-pink-600/25">
-                        <i class="fa-solid fa-vr-cardboard"></i><span>Modo VR</span>
-                    </button>
-                    <div id="user-profile-btn" onclick="openAuthModal()" class="w-9 h-9 rounded-full bg-gradient-to-tr from-pink-500 via-purple-600 to-sky-400 flex items-center justify-center font-bold text-xs cursor-pointer shadow-lg shadow-pink-500/40 border border-pink-400/40 hover:scale-105 transition flex-shrink-0" title="Perfil / Iniciar Sesión">
-                        A
-                    </div>
-                </div>
-            </header>
-
-            <!-- VISTA INICIO -->
-            <div id="tab-inicio" class="tab-content active">
-                <section class="p-4 sm:p-6 md:p-10">
-                    <div class="relative rounded-3xl overflow-hidden bg-gradient-to-r from-pink-950/40 via-purple-950/40 to-sky-950/40 border border-pink-500/20 p-6 sm:p-8 md:p-14 flex flex-col justify-center min-h-[380px] sm:min-h-[420px] shadow-2xl">
-                        <div class="absolute inset-0 bg-cover bg-center opacity-35 mix-blend-luminosity" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1600&q=80')"></div>
-                        <div class="absolute inset-0 bg-gradient-to-r from-[#030307] via-[#030307]/70 to-transparent"></div>
-                        <div class="relative z-10 max-w-xl">
-                            <span class="text-[11px] font-bold tracking-widest text-pink-400 mb-2 block">EXPERIENCIA INMERSIVA MS3</span>
-                            <h2 class="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">TU MUNDO.<br>TUS REGLAS.</h2>
-                            <p class="text-gray-300 text-xs sm:text-sm md:text-base mb-6 leading-relaxed">Disfrutá miles de títulos en 2D, Realidad Virtual y nuestra pulsera NFC inteligente con cargo mensual cancelable.</p>
-                            <div class="flex flex-wrap gap-3">
-                                <button onclick="openVRExperience('The Expanse')" class="flex items-center space-x-2 px-5 py-3 bg-gradient-to-r from-pink-600 via-purple-600 to-sky-400 rounded-xl font-bold text-xs sm:text-sm hover:opacity-90 transition shadow-lg shadow-pink-600/40 cursor-pointer">
-                                    <i class="fa-solid fa-play"></i><span>Ver ahora</span>
-                                </button>
-                                <button onclick="switchTab('suscripcion', null)" class="flex items-center space-x-2 px-5 py-3 bg-white/10 hover:bg-white/20 border border-pink-500/40 text-pink-300 rounded-xl font-bold text-xs sm:text-sm transition backdrop-blur cursor-pointer">
-                                    <i class="fa-solid fa-gift"></i><span>Pulsera NFC de Regalo</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </div>
-
-            <!-- VISTA EXPLORAR -->
-            <div id="tab-explorar" class="tab-content p-4 sm:p-6 md:p-10">
-                <h2 class="text-xl sm:text-2xl font-bold mb-6">Explorar Catálogo General</h2>
-            </div>
-
-            <!-- VISTA TENDENCIAS -->
-            <div id="tab-tendencias" class="tab-content p-4 sm:p-6 md:p-10">
-                <h2 class="text-xl sm:text-2xl font-bold mb-2">Tendencias Globales MS3</h2>
-                <p class="text-xs text-pink-400 mb-6">Lo más visto de la semana y adelantos rápidos.</p>
-            </div>
-
-            <!-- VISTA EN 2D -->
-            <div id="tab-en2d" class="tab-content p-4 sm:p-6 md:p-10">
-                <h2 class="text-xl sm:text-2xl font-bold mb-6">Contenido Estándar en 2D</h2>
-            </div>
-
-            <!-- VISTA EN REALIDAD VIRTUAL (CON VR MUSIC CON DIEGO MIZRAHI) -->
-            <div id="tab-envr" class="tab-content p-4 sm:p-6 md:p-10">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 class="text-xl sm:text-2xl font-bold mb-1">Experiencias Inmersivas VR 360°</h2>
-                        <p class="text-xs text-pink-400">Sumérgete en el contenido con soporte para giroscopio y gafas RV.</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Tarjeta VR Music con Diego Mizrahi -->
-                    <div onclick="openVRDetails('VR Music con Diego Mizrahi', 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80', 'Vive una experiencia musical inmersiva única junto a Diego Mizrahi en 360 grados. Siente cada acorde y la energía del escenario desde el corazón de la música en vivo.')" class="bg-[#070714] border border-pink-500/30 rounded-2xl overflow-hidden hover:border-pink-500 transition cursor-pointer group shadow-xl">
-                        <div class="relative h-48 bg-cover bg-center" style="background-image: url('ms3media/vrmusic.jpg.jpeg">
-                            <span class="absolute top-3 right-3 px-2.5 py-1 bg-pink-600/90 text-white text-[10px] font-extrabold rounded-lg tracking-wider border border-pink-400/40 shadow-lg">VR 360°</span>
-                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
-                                <span class="w-12 h-12 bg-pink-600/80 rounded-full flex items-center justify-center text-white shadow-lg"><i class="fa-solid fa-play ml-0.5"></i></span>
-                            </div>
-                        </div>
-                        <div class="p-4">
-                            <span class="text-[10px] text-pink-400 font-bold uppercase tracking-wider">Concierto Exclusivo</span>
-                            <h3 class="font-extrabold text-sm sm:text-base mt-1 text-white">VR Music con Diego Mizrahi</h3>
-                            <p class="text-xs text-gray-400 mt-1 line-clamp-2">Experimenta el sonido y la cercanía del artista con audio espacial y video 360.</p>
-                        </div>
-                    </div>
-
-                    <!-- Otras Tarjetas VR de relleno -->
-                    <div onclick="openVRDetails('Cyber City 360°', 'https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?auto=format&fit=crop&w=800&q=80', 'Recorre las calles futuristas cyberpunk con tecnología de video inmersivo de última generación en resolución 4K.')" class="bg-[#070714] border border-pink-500/20 rounded-2xl overflow-hidden hover:border-pink-500/50 transition cursor-pointer group shadow-xl">
-                        <div class="relative h-48 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?auto=format&fit=crop&w=800&q=80')">
-                            <span class="absolute top-3 right-3 px-2.5 py-1 bg-purple-600/90 text-white text-[10px] font-extrabold rounded-lg tracking-wider border border-purple-400/40">VR 4K</span>
-                        </div>
-                        <div class="p-4">
-                            <span class="text-[10px] text-purple-400 font-bold uppercase tracking-wider">Ciencia Ficción</span>
-                            <h3 class="font-extrabold text-sm sm:text-base mt-1 text-white">Cyber City 360°</h3>
-                            <p class="text-xs text-gray-400 mt-1 line-clamp-2">Explora mundos digitales interactivos y escenarios urbanos futuristas.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- VISTA PELÍCULAS -->
-            <div id="tab-peliculas" class="tab-content p-4 sm:p-6 md:p-10">
-                <h2 class="text-xl sm:text-2xl font-bold mb-6">Películas Seleccionadas</h2>
-            </div>
-
-            <!-- VISTA SERIES -->
-            <div id="tab-series" class="tab-content p-4 sm:p-6 md:p-10">
-                <h2 class="text-xl sm:text-2xl font-bold mb-6">Series Exclusivas MS3</h2>
-            </div>
-
-            <!-- VISTA MI LISTA -->
-            <div id="tab-milista" class="tab-content p-4 sm:p-6 md:p-10">
-                <h2 class="text-xl sm:text-2xl font-bold mb-2">Mi Perfil y Lista Guardada</h2>
-                <div id="my-list-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-                    <p class="text-xs text-gray-400">Aún no has agregado programas a tu lista.</p>
-                </div>
-            </div>
-
-            <!-- VISTA SUSCRIPCIÓN -->
-            <div id="tab-suscripcion" class="tab-content p-4 sm:p-6 md:p-10">
-                <div class="max-w-4xl mx-auto">
-                    <div id="sub-info-view" class="bg-gradient-to-br from-pink-950/40 via-purple-950/40 to-sky-950/40 border border-pink-500/30 rounded-3xl p-6 sm:p-8 md:p-12 shadow-2xl mb-10">
-                        <span class="text-[10px] sm:text-xs font-bold tracking-widest text-pink-400 mb-2 block uppercase">Suscripción Mensual con Cargo Recurrente</span>
-                        <h2 class="text-2xl sm:text-3xl md:text-4xl font-black mb-4">Pulsera NFC MS3 de Regalo</h2>
-                        <p class="text-gray-300 text-xs sm:text-sm md:text-base mb-6 leading-relaxed">
-                            Acceso ilimitado mensual por solo <strong class="text-pink-300">$6.499 ARS/mes</strong>. Puedes cancelar cuando quieras. Destino CVU oficial: <code class="bg-black/50 px-2 py-1 rounded text-pink-300 font-mono text-[11px]">0000003100076636444961</code>.
-                        </p>
-                        <button onclick="showCheckoutView()" class="w-full py-4 bg-gradient-to-r from-pink-600 via-purple-600 to-sky-400 hover:opacity-90 font-extrabold text-xs sm:text-sm rounded-2xl shadow-xl shadow-pink-600/40 transition cursor-pointer">
-                            ¡COMPLETAR DATOS DE SUSCRIPCIÓN Y FACTURA!
-                        </button>
-                    </div>
-
-                    <div id="sub-checkout-view" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8">
-                        <div class="lg:col-span-7 bg-[#070714] border border-pink-500/30 rounded-3xl p-6 md:p-8 shadow-2xl">
-                            <div class="flex justify-between items-center mb-6">
-                                <h3 class="text-base sm:text-lg font-black text-pink-300">Suscripción Mensual MS3</h3>
-                                <button onclick="backToSubInfo()" class="text-xs text-gray-400 hover:text-white cursor-pointer"><i class="fa-solid fa-arrow-left mr-1"></i> Volver</button>
-                            </div>
-                            <form onsubmit="processPaymentAndSendWhatsApp(event)" class="space-y-4">
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-[10px] uppercase font-bold text-gray-400 mb-1">Nombre</label>
-                                        <input type="text" id="pay-nombre" required oninput="updateFactura()" class="w-full bg-[#030307] border border-pink-500/30 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-pink-500" placeholder="Tu nombre">
-                                    </div>
-                                    <div>
-                                        <label class="block text-[10px] uppercase font-bold text-gray-400 mb-1">Apellido</label>
-                                        <input type="text" id="pay-apellido" required oninput="updateFactura()" class="w-full bg-[#030307] border border-pink-500/30 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-pink-500" placeholder="Tu apellido">
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-[10px] uppercase font-bold text-gray-400 mb-1">Dirección / Ubicación</label>
-                                        <input type="text" id="pay-direccion" required oninput="updateFactura()" class="w-full bg-[#030307] border border-pink-500/30 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-pink-500" placeholder="Calle, Número, Ciudad">
-                                    </div>
-                                    <div>
-                                        <label class="block text-[10px] uppercase font-bold text-gray-400 mb-1">Número Telefónico</label>
-                                        <input type="tel" id="pay-telefono" required oninput="updateFactura()" class="w-full bg-[#030307] border border-pink-500/30 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-pink-500" placeholder="+54 ...">
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] uppercase font-bold text-gray-400 mb-1">Medio de Pago</label>
-                                    <select id="pay-medio" onchange="updateFactura()" class="w-full bg-[#030307] border border-pink-500/30 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-pink-500">
-                                        <option value="Tarjeta Visa">Tarjeta Visa</option>
-                                        <option value="Tarjeta Mastercard">Tarjeta Mastercard</option>
-                                        <option value="Mercado Pago (CVU)">Mercado Pago / CVU</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] uppercase font-bold text-gray-400 mb-1">Número de Tarjeta / CVU</label>
-                                    <input type="text" id="pay-tarjeta" required class="w-full bg-[#030307] border border-pink-500/30 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-pink-500" placeholder="XXXX XXXX XXXX XXXX">
-                                </div>
-                                <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-pink-600 via-purple-600 to-sky-400 hover:opacity-90 font-extrabold text-xs rounded-xl shadow-lg shadow-pink-600/30 transition cursor-pointer mt-2">
-                                    CONFIRMAR SUSCRIPCIÓN Y ENVIAR A WHATSAPP
-                                </button>
-                            </form>
-                        </div>
-                        <div class="lg:col-span-5 bg-[#030307] border border-pink-500/40 rounded-3xl p-6 shadow-2xl flex flex-col justify-between">
-                            <div>
-                                <div class="flex justify-between items-center border-b border-white/10 pb-4 mb-4">
-                                    <span class="font-black text-pink-400 tracking-wider text-xs sm:text-sm">FACTURA MS3 (MENSUAL)</span>
-                                </div>
-                                <div class="space-y-3 text-xs text-gray-300 mb-6">
-                                    <div class="flex justify-between"><span>Titular:</span> <span id="factura-nombre" class="font-bold text-white">-</span></div>
-                                    <div class="flex justify-between"><span>Ubicación:</span> <span id="factura-direccion" class="font-bold text-white">-</span></div>
-                                    <div class="flex justify-between"><span>Teléfono:</span> <span id="factura-telefono" class="font-bold text-white">-</span></div>
-                                    <div class="flex justify-between"><span>Medio:</span> <span id="factura-medio" class="font-bold text-pink-300">Tarjeta Visa</span></div>
-                                </div>
-                                <div class="border-t border-white/10 pt-4 space-y-2 text-xs">
-                                    <div class="flex justify-between text-gray-400"><span>Cuota Mensual MS3 + Pulsera NFC:</span> <span>$6.499 ARS</span></div>
-                                    <div class="flex justify-between text-base font-black text-white pt-2 border-t border-white/10"><span>Total Mensual:</span> <span class="text-pink-400">$6.499 ARS</span></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- PLANTILLA / MODAL DE DESCRIPCIÓN DEL PROGRAMA -->
-    <div id="vr-details-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="bg-[#070714] border border-pink-500/40 rounded-3xl max-w-lg w-full p-6 relative shadow-2xl glow-box">
-            <button onclick="closeVRDetails()" class="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
-            <div id="vr-modal-img" class="h-52 bg-cover bg-center rounded-2xl mb-4 relative">
-                <span class="absolute top-3 right-3 px-2.5 py-1 bg-pink-600 text-white text-[10px] font-bold rounded-lg">VR 360°</span>
-            </div>
-            <h3 id="vr-modal-title" class="text-xl font-black mb-2 text-white">Título del Programa</h3>
-            <p id="vr-modal-desc" class="text-xs sm:text-sm text-gray-300 mb-6 leading-relaxed">Descripción detallada del programa inmersivo.</p>
-            <div class="flex flex-col sm:flex-row gap-3">
-                <button onclick="startVRPlayback()" class="flex-1 py-3.5 bg-gradient-to-r from-pink-600 via-purple-600 to-sky-400 font-extrabold text-xs rounded-xl shadow-lg shadow-pink-600/40 hover:opacity-90 transition cursor-pointer flex items-center justify-center space-x-2">
-                    <i class="fa-solid fa-play"></i><span>REPRODUCIR</span>
-                </button>
-                <button onclick="addCurrentToList()" class="flex-1 py-3 bg-white/10 hover:bg-white/20 border border-pink-500/40 font-bold text-xs rounded-xl transition cursor-pointer text-pink-300 flex items-center justify-center space-x-2">
-                    <i class="fa-solid fa-plus"></i><span>AGREGAR A MI LISTA</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- REPRODUCTOR EN REALIDAD VIRTUAL EN PANTALLA COMPLETA (CON GIROSCOPIO Y GAFAS VR) -->
-    <div id="vr-player-modal" class="fixed inset-0 z-[70] bg-black hidden flex flex-col">
-        <div class="absolute top-4 left-4 right-4 z-30 flex justify-between items-center bg-black/60 backdrop-blur-md px-4 py-3 rounded-2xl border border-pink-500/30">
-            <div>
-                <span class="text-[10px] text-pink-400 font-bold uppercase tracking-wider">Modo Inmersivo 360°</span>
-                <h3 id="vr-player-title" class="text-xs sm:text-sm font-black text-white">Reproductor VR</h3>
-            </div>
-            <div class="flex items-center space-x-3">
-                <!-- Botón Gafas VR para partir pantalla -->
-                <button onclick="toggleVRSplitScreen()" id="vr-split-btn" class="px-3.5 py-2 bg-pink-600/30 border border-pink-500/50 hover:bg-pink-600/50 text-pink-300 rounded-xl text-xs font-bold transition flex items-center space-x-2 cursor-pointer title='Activar Gafas VR (Pantalla Partida)'">
-                    <i class="fa-solid fa-vr-cardboard text-sm"></i><span class="hidden sm:inline">Gafas VR</span>
-                </button>
-                <button onclick="closeVRPlayer()" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition cursor-pointer text-white">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Contenedores 3D (Pantalla completa normal o dividida en 2 para Gafas VR) -->
-        <div class="flex-1 w-full h-full flex flex-row relative overflow-hidden">
-            <div id="vr-viewport-left" class="w-full h-full relative cursor-grab"></div>
-            <div id="vr-viewport-right" class="w-full h-full relative cursor-grab hidden border-l border-pink-500/40"></div>
-        </div>
-
-        <!-- Barra inferior de control para activar giroscopio en móviles -->
-        <div class="absolute bottom-4 inset-x-4 z-30 flex justify-center">
-            <button onclick="requestGyroscopePermission()" id="gyro-btn" class="px-5 py-2.5 bg-black/70 backdrop-blur border border-pink-500/40 hover:bg-pink-600/30 text-pink-300 rounded-xl text-xs font-bold transition shadow-lg cursor-pointer flex items-center space-x-2">
-                <i class="fa-solid fa-compass"></i><span>Activar Giroscopio / Celular</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- NAVEGACIÓN MÓVIL INFERIOR -->
-    <nav class="md:hidden fixed bottom-0 inset-x-0 bg-[#05050c]/95 backdrop-blur-lg border-t border-pink-500/15 flex justify-around py-3 z-40">
-        <button onclick="switchTab('inicio', this)" class="mobile-nav-btn flex flex-col items-center text-pink-400 cursor-pointer"><i class="fa-solid fa-house text-sm"></i><span class="text-[10px] mt-1">Inicio</span></button>
-        <button onclick="switchTab('explorar', this)" class="mobile-nav-btn flex flex-col items-center text-gray-400 cursor-pointer"><i class="fa-solid fa-compass text-sm"></i><span class="text-[10px] mt-1">Explorar</span></button>
-        <button onclick="switchTab('tendencias', this)" class="mobile-nav-btn flex flex-col items-center text-gray-400 cursor-pointer"><i class="fa-solid fa-fire text-sm"></i><span class="text-[10px] mt-1">Tendencias</span></button>
-        <button onclick="switchTab('envr', this)" class="mobile-nav-btn flex flex-col items-center text-gray-400 cursor-pointer"><i class="fa-solid fa-vr-cardboard text-sm"></i><span class="text-[10px] mt-1">VR 360</span></button>
-        <button onclick="openAuthModal()" class="mobile-nav-btn flex flex-col items-center text-gray-400 cursor-pointer"><i class="fa-solid fa-user text-sm"></i><span class="text-[10px] mt-1">Perfil</span></button>
-    </nav>
 
     <script>
-        // Fondo de espacio con Three.js
-        let spaceScene, spaceCamera, spaceRenderer, starsMesh;
-        function initSpaceBackground() {
-            const canvas = document.getElementById('space-bg');
-            if(!canvas) return;
-            spaceScene = new THREE.Scene();
-            spaceCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-            spaceCamera.position.z = 5;
-            spaceRenderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
-            spaceRenderer.setSize(window.innerWidth, window.innerHeight);
-
-            const starsGeometry = new THREE.BufferGeometry();
-            const starsCount = 2000;
-            const posArray = new Float32Array(starsCount * 3);
-            for(let i = 0; i < starsCount * 3; i++) {
-                posArray[i] = (Math.random() - 0.5) * 50;
-            }
-            starsGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-            const starsMaterial = new THREE.PointsMaterial({ size: 0.08, color: 0xec4899, transparent: true, opacity: 0.8 });
-            starsMesh = new THREE.Points(starsGeometry, starsMaterial);
-            spaceScene.add(starsMesh);
-            animateSpace();
-        }
-
-        function animateSpace() {
-            requestAnimationFrame(animateSpace);
-            if(starsMesh) {
-                starsMesh.rotation.y -= 0.0006;
-                starsMesh.rotation.x -= 0.0003;
-            }
-            if(spaceRenderer) spaceRenderer.render(spaceScene, spaceCamera);
-        }
-
-        function enterApp() {
-            const intro = document.getElementById('intro-screen');
-            const main = document.getElementById('main-app');
-            intro.style.transform = 'scale(1.15)';
-            intro.style.opacity = '0';
-            setTimeout(() => {
-                intro.style.display = 'none';
-                main.style.opacity = '1';
-            }, 800);
-        }
-
-        window.onload = () => {
-            initSpaceBackground();
-            checkExistingSession();
-        };
-
-        // Cambio de pestañas
-        function switchTab(tabId, btnElement) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // Gestión de Autenticación
-        function openAuthModal() { document.getElementById('auth-modal').classList.remove('hidden'); }
-        function closeAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); }
-        function handleUserLoginOrRegister(e) {
-            e.preventDefault();
-            const email = document.getElementById('user-email-input').value;
-            localStorage.setItem('ms3_user_email', email);
-            updateSessionUI(email);
-            closeAuthModal();
-        }
-        function checkExistingSession() {
-            const savedEmail = localStorage.getItem('ms3_user_email');
-            if(savedEmail) updateSessionUI(savedEmail);
-        }
-        function updateSessionUI(email) {
-            const initial = email[0].toUpperCase();
-            document.getElementById('user-profile-btn').innerText = initial;
-            document.getElementById('session-email-display').innerText = email;
-            document.getElementById('session-avatar').innerText = initial;
-            document.getElementById('auth-form-container').classList.add('hidden');
-            document.getElementById('auth-session-container').classList.remove('hidden');
-        }
-        function handleLogout() {
-            localStorage.removeItem('ms3_user_email');
-            document.getElementById('user-profile-btn').innerText = 'A';
-            document.getElementById('auth-form-container').classList.remove('hidden');
-            document.getElementById('auth-session-container').classList.add('hidden');
-            closeAuthModal();
-        }
-
-        // Suscripción y Factura
-        function showCheckoutView() {
-            document.getElementById('sub-info-view').classList.add('hidden');
-            document.getElementById('sub-checkout-view').classList.remove('hidden');
-        }
-        function backToSubInfo() {
-            document.getElementById('sub-checkout-view').classList.add('hidden');
-            document.getElementById('sub-info-view').classList.remove('hidden');
-        }
-        function updateFactura() {
-            const nombre = document.getElementById('pay-nombre').value || '-';
-            const apellido = document.getElementById('pay-apellido').value || '';
-            const direccion = document.getElementById('pay-direccion').value || '-';
-            const telefono = document.getElementById('pay-telefono').value || '-';
-            const medio = document.getElementById('pay-medio').value;
-            document.getElementById('factura-nombre').innerText = nombre + ' ' + apellido;
-            document.getElementById('factura-direccion').innerText = direccion;
-            document.getElementById('factura-telefono').innerText = telefono;
-            document.getElementById('factura-medio').innerText = medio;
-        }
-        function processPaymentAndSendWhatsApp(e) {
-            e.preventDefault();
-            const nombre = document.getElementById('pay-nombre').value;
-            const apellido = document.getElementById('pay-apellido').value;
-            const direccion = document.getElementById('pay-direccion').value;
-            const telefono = document.getElementById('pay-telefono').value;
-            const medio = document.getElementById('pay-medio').value;
-            const mensajeWa = `Hola, realicé mi suscripción mensual MS3 ($6.499 ARS/mes):%0A*Nombre:* ${nombre} ${apellido}%0A*Dirección:* ${direccion}%0A*Teléfono:* ${telefono}%0A*Medio:* ${medio}%0A¡Por favor enviar mi pulsera NFC de regalo!`;
-            window.open(`https://wa.me/543541201963?text=${mensajeWa}`, '_blank');
-        }
-
-        // Sistema de Plantilla / Modal de Programa VR
-        let currentProgram = { title: '', img: '', desc: '' };
-
-        function openVRDetails(title, imgUrl, desc) {
-            currentProgram = { title, img: imgUrl, desc };
-            document.getElementById('vr-modal-title').innerText = title;
-            document.getElementById('vr-modal-desc').innerText = desc;
-            document.getElementById('vr-modal-img').style.backgroundImage = `url('${imgUrl}')`;
-            document.getElementById('vr-details-modal').classList.remove('hidden');
-        }
-
-        function closeVRDetails() {
-            document.getElementById('vr-details-modal').classList.add('hidden');
-        }
-
-        function addCurrentToList() {
-            let list = JSON.parse(localStorage.getItem('ms3_mylist') || '[]');
-            if(!list.some(item => item.title === currentProgram.title)) {
-                list.push(currentProgram);
-                localStorage.setItem('ms3_mylist', JSON.stringify(list));
-                alert(`¡"${currentProgram.title}" se agregó a tu lista!`);
-            } else {
-                alert('Este programa ya se encuentra en tu lista.');
-            }
-            renderMyList();
-            closeVRDetails();
-        }
+        let myList = [
+            { title: 'Buscando a la futura vedette', icon: '<img src=&quot;ms3media/vedettehorizontal.png&quot; style=&quot;width:100%; height:100%; object-fit:cover;&quot;>', desc: 'Experiencia 360° propia grabada con Gear 360. Arrastra con el mouse o mueve tu celular con total libertad de movimiento.', url: 'https://www.youtube.com/embed/RCT0Kw5cqXQ?autoplay=1', panoImg: 'ms3media/vedettehorizontal.png' },
+            { title: 'MEDICINA VR', icon: '<img src=&quot;ms3media/medicinahorizontal.png&quot; style=&quot;width:100%; height:100%; object-fit:cover;&quot;>', desc: 'Explora los avances y contenidos médicos inmersivos capturados en resolución total de 360 grados.', url: 'https://youtu.be/cQeUF8H2PR0?si=T-jnZonZnGdbJ9bs', panoImg: 'ms3media/medicinahorizontal.png' },
+            { title: 'Favorito Estelar', icon: '⭐', desc: 'Producciones de culto marcadas por tu perfil.', url: 'https://youtu.be/cQeUF8H2PR0?si=T-jnZonZnGdbJ9bs', panoImg: '' }
+        ];
 
         function renderMyList() {
-            const container = document.getElementById('my-list-container');
-            let list = JSON.parse(localStorage.getItem('ms3_mylist') || '[]');
-            if(list.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-400">Aún no has agregado programas a tu lista.</p>`;
-                return;
-            }
-            container.innerHTML = list.map(item => `
-                <div class="bg-[#070714] border border-pink-500/20 rounded-2xl p-3 flex items-center space-x-4">
-                    <div class="w-20 h-16 bg-cover bg-center rounded-xl flex-shrink-0" style="background-image: url('${item.img}')"></div>
-                    <div>
-                        <h4 class="font-bold text-xs text-white">${item.title}</h4>
-                        <span class="text-[10px] text-pink-400">Guardado en Mi Lista</span>
-                    </div>
+            const gridMyList = document.getElementById('gridMyList');
+            const htmlContent = myList.map((item, index) => `
+                <div class="card" onclick="openPreview('${item.title}', '${item.icon}', '${item.desc}', '${item.url}', '${item.panoImg || ''}')">
+                    <button class="card-remove-btn" onclick="event.stopPropagation(); removeFromList(${index})" title="Eliminar">✕</button>
+                    <div class="card-bg" style="${item.panoImg ? 'background-image: url(' + item.panoImg + ');' : ''}">${!item.icon.includes('img') ? item.icon : ''}</div>
+                    <span class="card-tag">Guardado</span>
+                    <div class="card-overlay"><div class="card-title">${item.title}</div></div>
                 </div>
             `).join('');
+            gridMyList.innerHTML = htmlContent;
         }
 
-        function startVRPlayback() {
-            closeVRDetails();
-            openVRExperience360(currentProgram.title, currentProgram.img);
+        function removeFromList(index) {
+            myList.splice(index, 1);
+            renderMyList();
         }
 
-        // --- REPRODUCTOR 360° CON SOPORTE DE GIROSCOPIO Y PANTALLA PARTIDA (GAFAS VR) ---
-        let vrScene, vrCameraLeft, vrCameraRight, vrRendererLeft, vrRendererRight;
-        let isSplitScreen = false, isDragging = false, previousMousePosition = { x: 0, y: 0 };
-        let controlsEnabled = false;
+        document.addEventListener('DOMContentLoaded', renderMyList);
 
-        function openVRExperience360(title, bgImgUrl) {
-            document.getElementById('vr-player-title').innerText = title;
-            document.getElementById('vr-player-modal').classList.remove('hidden');
+        // Transición de Bienvenida
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const appContainer = document.getElementById('appContainer');
+        document.getElementById('enterBtn').addEventListener('click', () => {
+            welcomeScreen.classList.add('fade-out-elegant');
+            appContainer.classList.add('active');
+            setTimeout(() => {
+                welcomeScreen.style.display = 'none';
+            }, 1200);
+        });
 
-            const containerLeft = document.getElementById('vr-viewport-left');
-            const containerRight = document.getElementById('vr-viewport-right');
-            containerLeft.innerHTML = '';
-            containerRight.innerHTML = '';
+        // Pestañas
+        const navItems = document.querySelectorAll('.sub-nav .nav-item');
+        const contentSections = document.querySelectorAll('.content-section');
 
-            // Escena 3D
-            vrScene = new THREE.Scene();
-
-            // Cámaras
-            vrCameraLeft = new THREE.PerspectiveCamera(75, containerLeft.clientWidth / containerLeft.clientHeight, 0.1, 1000);
-            vrCameraRight = new THREE.PerspectiveCamera(75, containerRight.clientWidth / containerRight.clientHeight, 0.1, 1000);
-            vrCameraLeft.position.set(0, 0, 0.1);
-            vrCameraRight.position.set(0, 0, 0.1);
-
-            // Renderers
-            vrRendererLeft = new THREE.WebGLRenderer({ antialias: true });
-            vrRendererLeft.setSize(containerLeft.clientWidth, containerLeft.clientHeight);
-            containerLeft.appendChild(vrRendererLeft.domElement);
-
-            vrRendererRight = new THREE.WebGLRenderer({ antialias: true });
-            vrRendererRight.setSize(containerRight.clientWidth, containerRight.clientHeight);
-            containerRight.appendChild(vrRendererRight.domElement);
-
-            // Esfera 360° Texturizada
-            const geometry = new THREE.SphereGeometry(500, 60, 40);
-            geometry.scale(-1, 1, 1);
-            const textureLoader = new THREE.TextureLoader();
-            textureLoader.load(bgImgUrl, (texture) => {
-                const material = new THREE.MeshBasicMaterial({ map: texture });
-                const sphere = new THREE.Mesh(geometry, material);
-                vrScene.add(sphere);
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                navItems.forEach(nav => nav.classList.remove('active'));
+                contentSections.forEach(section => section.classList.remove('active'));
+                item.classList.add('active');
+                document.getElementById(item.getAttribute('data-target')).classList.add('active');
             });
+        });
 
-            // Controles de Arstrate con Mouse / Tactil
-            const addMouseControls = (elem) => {
-                elem.addEventListener('mousedown', (e) => { isDragging = true; previousMousePosition = { x: e.clientX, y: e.clientY }; });
-                elem.addEventListener('mousemove', (e) => {
-                    if(!isDragging || controlsEnabled) return;
-                    let deltaX = (e.clientX - previousMousePosition.x) * 0.005;
-                    let deltaY = (e.clientY - previousMousePosition.y) * 0.005;
-                    vrCameraLeft.rotation.y -= deltaX;
-                    vrCameraLeft.rotation.x -= deltaY;
-                    vrCameraRight.rotation.y = vrCameraLeft.rotation.y;
-                    vrCameraRight.rotation.x = vrCameraLeft.rotation.x;
-                    previousMousePosition = { x: e.clientX, y: e.clientY };
-                });
-                window.addEventListener('mouseup', () => { isDragging = false; });
-            };
+        document.getElementById('logoHomeBtn').addEventListener('click', () => {
+            navItems.forEach(nav => nav.classList.remove('active'));
+            contentSections.forEach(section => section.classList.remove('active'));
+            navItems[0].classList.add('active');
+            document.getElementById('tabInicio').classList.add('active');
+        });
 
-            addMouseControls(containerLeft);
-            addMouseControls(containerRight);
+        // Modal
+        const previewModal = document.getElementById('previewModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalImg = document.getElementById('modalImg');
+        const modalDesc = document.getElementById('modalDesc');
+        const modalPlayBtn = document.getElementById('modalPlayBtn');
+        const modalAddListBtn = document.getElementById('modalAddListBtn');
 
-            animateVRScene();
-        }
+        let currentProgram = { title: '', icon: '', desc: '', url: '', panoImg: '' };
 
-        // Activación del Giroscopio del Celular
-        function requestGyroscopePermission() {
-            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission().then(response => {
-                    if (response === 'granted') {
-                        activateGyroListener();
-                    } else {
-                        alert('Permiso de giroscopio denegado.');
-                    }
-                }).catch(console.error);
+        function openPreview(title, icon, desc, videoUrl, panoImg = '') {
+            currentProgram = { title, icon, desc, url: videoUrl || 'https://youtu.be/cQeUF8H2PR0?si=T-jnZonZnGdbJ9bs', panoImg };
+            modalTitle.textContent = title;
+            modalImg.innerHTML = icon + '<button class="preview-close" onclick="closePreview()">✕</button>';
+            if (panoImg) {
+                modalImg.style.backgroundImage = "url('" + panoImg + "')";
+            } else if (icon.includes('vedettehorizontal.png') || icon.includes('medicinahorizontal.png')) {
+                // Extraer src si viene en formato tag img
+                modalImg.style.backgroundImage = "none";
             } else {
-                activateGyroListener();
+                modalImg.style.backgroundImage = "none";
             }
+            modalDesc.textContent = desc;
+            
+            if (myList.some(item => item.title === title)) {
+                modalAddListBtn.textContent = "✓ En mi lista (Eliminar)";
+                modalAddListBtn.className = "btn btn-danger";
+            } else {
+                modalAddListBtn.textContent = "+ Agregar a mi lista";
+                modalAddListBtn.className = "btn btn-secondary";
+            }
+            
+            previewModal.classList.add('active');
         }
 
-        function activateGyroListener() {
-            controlsEnabled = true;
-            document.getElementById('gyro-btn').innerHTML = `<i class="fa-solid fa-check mr-1"></i> Giroscopio Activo`;
-            window.addEventListener('deviceorientation', (event) => {
-                if (!controlsEnabled) return;
-                let alpha = event.alpha ? THREE.MathUtils.degToRad(event.alpha) : 0;
-                let beta = event.beta ? THREE.MathUtils.degToRad(event.beta) : 0;
-                let gamma = event.gamma ? THREE.MathUtils.degToRad(event.gamma) : 0;
-
-                // Mapeo suave de orientación del celular a la cámara 360
-                vrCameraLeft.rotation.x = beta - Math.PI / 2;
-                vrCameraLeft.rotation.y = gamma;
-                vrCameraRight.rotation.x = vrCameraLeft.rotation.x;
-                vrCameraRight.rotation.y = vrCameraLeft.rotation.y;
-            }, true);
+        function closePreview() {
+            previewModal.classList.remove('active');
         }
 
-        // Alternar Pantalla Partida (Gafas VR)
-        function toggleVRSplitScreen() {
-            isSplitScreen = !isSplitScreen;
-            const rightContainer = document.getElementById('vr-viewport-right');
-            const splitBtn = document.getElementById('vr-split-btn');
+        modalPlayBtn.addEventListener('click', () => {
+            closePreview();
+            openPlayer(currentProgram.title, currentProgram.panoImg);
+        });
 
-            if(isSplitScreen) {
-                rightContainer.classList.remove('hidden');
-                splitBtn.classList.add('bg-pink-600', 'text-white');
-                if(vrRendererRight && document.getElementById('vr-viewport-right')) {
-                    vrRendererRight.setSize(document.getElementById('vr-viewport-right').clientWidth, document.getElementById('vr-viewport-right').clientHeight);
+        modalAddListBtn.addEventListener('click', () => {
+            const existsIndex = myList.findIndex(item => item.title === currentProgram.title);
+            if (existsIndex >= 0) {
+                myList.splice(existsIndex, 1);
+            } else {
+                myList.push({ ...currentProgram });
+            }
+            renderMyList();
+            closePreview();
+        });
+
+        // Visor Propio 360° / VR nativo con Pannellum (sin marcas de YouTube)
+        const playerContainer = document.getElementById('playerContainer');
+        const closePlayerBtn = document.getElementById('closePlayerBtn');
+        const playerControls = document.getElementById('playerControls');
+        const gyroBtn = document.getElementById('gyroBtn');
+        let viewerInstance = null;
+
+        function openPlayer(title, panoImg) {
+            playerContainer.classList.add('active');
+            if (playerContainer.requestFullscreen) {
+                playerContainer.requestFullscreen().catch(() => {});
+            }
+
+            let bgSource = panoImg || 'ms3media/vedettehorizontal.png';
+            if (title === 'MEDICINA VR') {
+                bgSource = 'ms3media/medicinahorizontal.png';
+            }
+
+            setTimeout(() => {
+                if (viewerInstance) {
+                    viewerInstance.destroy();
                 }
-            } else {
-                rightContainer.classList.add('hidden');
-                splitBtn.classList.remove('bg-pink-600', 'text-white');
+                
+                viewerInstance = pannellum.viewer('panorama', {
+                    "type": "equirectangular",
+                    "panorama": bgSource,
+                    "autoLoad": true,
+                    "compass": true,
+                    "hfov": 100
+                });
+            }, 200);
+        }
+
+        closePlayerBtn.addEventListener('click', () => {
+            if (viewerInstance) {
+                viewerInstance.destroy();
+                viewerInstance = null;
             }
-        }
+            playerContainer.classList.remove('active');
+            document.getElementById('panorama').innerHTML = '';
+            if (document.exitFullscreen) {
+                document.exitFullscreen().catch(() => {});
+            }
+        });
 
-        function closeVRPlayer() {
-            document.getElementById('vr-player-modal').classList.add('hidden');
-            controlsEnabled = false;
-        }
+        gyroBtn.addEventListener('click', () => {
+            if (viewerInstance) {
+                if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    DeviceOrientationEvent.requestPermission().then(response => {
+                        if (response === 'granted') {
+                            viewerInstance.startOrientation();
+                            gyroBtn.textContent = "Giroscopio Activo";
+                        }
+                    }).catch(() => {});
+                } else {
+                    viewerInstance.startOrientation();
+                    gyroBtn.textContent = "Giroscopio Activo";
+                }
+            }
+        });
 
-        function animateVRScene() {
-            if(document.getElementById('vr-player-modal').classList.contains('hidden')) return;
-            requestAnimationFrame(animateVRScene);
-            if(vrRendererLeft && vrCameraLeft) vrRendererLeft.render(vrScene, vrCameraLeft);
-            if(isSplitScreen && vrRendererRight && vrCameraRight) vrRendererRight.render(vrScene, vrCameraRight);
-        }
+        playerContainer.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON' || e.target.closest('#panorama')) return;
+            playerControls.classList.toggle('hidden');
+        });
     </script>
 </body>
 </html>
